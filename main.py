@@ -32,7 +32,7 @@ def main():
                 print("Transaction Refused")
                 sys.stdout.flush()
                 continue  # This was an invalid transaction; ignore it and move on
-            
+
         ## Make a block
         myBlock = Chain.makeBlock(txnList,chain)
         chain.append(myBlock)
