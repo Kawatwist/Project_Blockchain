@@ -1,6 +1,10 @@
 import random
 random.seed(0)
 
+    #Selected Transaction
+def makeRealTransaction(amountpay, pay, payed, amountpayed):
+    return {pay:amountpay,payed:amountpayed}
+
     # Random Transaction
 def makeTransaction(maxValue=3):
     sign      = int(random.getrandbits(1))*2 - 1
@@ -21,10 +25,11 @@ def updateState(txn, state):
 
     # Check the Validity
 def isValidTxn(txn,state):
-    if sum(txn.values()) is not 0:
+    if sum(txn.values()) != 0.0:
+        print(sum(txn.values()))
         return False
     for key in txn.keys():
-        if key in state.keys(): 
+        if key in state.keys():
             acctBalance = state[key]
         else:
             acctBalance = 0
