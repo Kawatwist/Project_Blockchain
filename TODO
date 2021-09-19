@@ -4,3 +4,14 @@
 [ ] Find User
 [ ] Ask Transaction
 [ ] Validate Transaction
+
+
+[Blockchain] -> [Blockchain]
+
+/!\ Un full node prend la chain la plus longue (Si txn1 -> txn2 split en txn3A et txn3B mais un txn4 est ajouter a txn3A alors txn3B n'est pas ajouter)
+
+[Full node]    ("Genesis" Permet la validation et ajout d'un block si PoW > 50%)
+[Archive node] (Permet de deployer une nouvelle full node ou donner les infos a un light)
+[Light node]   (Permet la Validation de block mais pas son ajout)
+
+/!\ Pas besoin que les Full node soit sync (Sauf lors d'un deploiement d'un nouveau genesis)
