@@ -21,20 +21,14 @@ helperClass = {
 }
 
 class Config :
-    def __init__(self) :
-        self.type = "full"
-        self.port = 4242
-        self.host = "localhost"
-        self.client = 4243
-        self.listnode = []
+    type = "full"
+    port = 4242
+    host = "localhost"
+    client = 4243
+    listnode = []
+    first = False
 
-    def printInfo(self) :
-        print("\tType :", self.type)
-        print("\tPort :", self.port)
-        print("\tHost :", self.host)
-        print("\tClient :", self.client)
-
-    def setArgs(self, args) :
+    def __init__(self, args) :
         if args.node :
             self.setType(args.node)
         if args.port :
@@ -43,6 +37,14 @@ class Config :
             self.setHost(args.host)
         if args.portCl :
             self.setPortClient(args.portCl)
+        if args.new :
+            self.first = args.new
+
+    def printInfo(self) :
+        print("\tType :", self.type)
+        print("\tPort :", self.port)
+        print("\tHost :", self.host)
+        print("\tClient :", self.client)
 
     def setType(self, newtype) :
         self.type = newtype.lower()
@@ -52,6 +54,8 @@ class Config :
         self.host = newhost
     def setPortClient(self, newportclient) :
         self.client = newportclient
+    def setFirstNode(self, first) :
+        self.first = first
 
     def createNode(self) :
         if self.type in nodeName :
