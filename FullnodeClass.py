@@ -37,20 +37,22 @@ class Fullnode :
     def threadAcceptNode(self) :
         while True:
             co, addr = self.mySocket.accept()
-            print("New client joined the socket : ", addr)
-            print("\n\n", co.getsockname(), "\n\n")
-            newSoc = socket.socket()
-            newSoc.connect(co.getsockname())
-            self.listSoc.append(newSoc)
-            self.listNode.append({"c":co, "addr":addr})
-            if not self.config.first :
-                msg = str(listSoc)
-                self.listNode[-1].send(msg.encode())
+            print("New client joined the socket : ", co, " | ", addr)
+            # newSoc = socket.socket()
+            # if not co.getsockname in self.listNode :
+            #     newSoc.connect(co.getsockname())
+            #     self.listSoc.append(newSoc)
+            #     self.listNode.append(co.getsockname)
+            #     if not self.config.first :
+            #         msg = str(self.listSoc)
+            #         self.listSoc[-1].send(msg.encode())
+            sleep(0.5)
 
     def threadReaderNode(self) :
         while True:
-            for node in self.listNode :
-                newmsg = node.get("c").recv(1024).decode()
+            for soc in self.listSoc :
+                print("Node send msg\n")
+                newmsg = soc.recv(1024).decode()
                 if len(newmsg) != 0 :
                     print("New data : ", newmsg)
             sleep(0.5)
