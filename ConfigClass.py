@@ -24,8 +24,8 @@ class Config :
     type = "full"
     port = 4242
     host = "localhost"
-    client = 4243
-    listnode = []
+    node = 4243
+    client = 4244
     first = False
 
     def __init__(self, args) :
@@ -35,8 +35,10 @@ class Config :
             self.setPort(args.port)
         if args.host :
             self.setHost(args.host)
-        if args.portCl :
-            self.setPortClient(args.portCl)
+        if args.portNode :
+            self.setPortNode(args.portNode)
+        if args.portClient :
+            self.setPortClient(args.portClient)
         if args.new :
             self.first = args.new
 
@@ -44,6 +46,7 @@ class Config :
         print("\tType :", self.type)
         print("\tPort :", self.port)
         print("\tHost :", self.host)
+        print("\tPortNode :", self.node)
         print("\tClient :", self.client)
 
     def setType(self, newtype) :
@@ -52,6 +55,8 @@ class Config :
         self.port = newport
     def setHost(self, newhost) :
         self.host = newhost
+    def setPortNode(self, newportnode) :
+        self.node = newportnode
     def setPortClient(self, newportclient) :
         self.client = newportclient
     def setFirstNode(self, first) :
