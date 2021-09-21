@@ -9,6 +9,7 @@ def main():
     parser.add_argument('--portNode', required=False, type=int, help='Listener port of the Node (Used for the other node connection)')
     parser.add_argument('--portClient', required=False, type=int, help='Listener port of the Node (Used for the client connection, initialised at 4243)')
     parser.add_argument('--new', required=False, type=bool, help='Doest it need to be connected to someone')
+    parser.add_argument('--name', required=False, type=str, help='Select a name for the node (Not really usefull for the moment)')
     args = parser.parse_args()
 
     config = cf(args)

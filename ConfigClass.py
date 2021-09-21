@@ -27,6 +27,7 @@ class Config :
     node = 4243
     client = 4244
     first = False
+    name = ""
 
     def __init__(self, args) :
         if args.node :
@@ -41,6 +42,8 @@ class Config :
             self.setPortClient(args.portClient)
         if args.new :
             self.first = args.new
+        if args.name :
+            self.name = args.name
 
     def printInfo(self) :
         print("\tType :", self.type)

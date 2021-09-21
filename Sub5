@@ -1,0 +1,9 @@
+Creation node : 
+	Type : full
+	Port : 4243
+	Host : localhost
+	PortNode : 4253
+	Client : 4254
+Connection Host  localhost : 4243
+Connection success
+New data :  {'pay': 'Alice', 'price': 5, 'payed': 'Bob', 'pricepayed': -5}

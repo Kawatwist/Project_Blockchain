@@ -1,0 +1,10 @@
+Creation node : 
+	Type : full
+	Port : 4242
+	Host : localhost
+	PortNode : 4243
+	Client : 4244
+New client joined the socket :  ('127.0.0.1', 52545)
+New data :  {'pay': 'Alice', 'price': 5, 'payed': 'Bob', 'pricepayed': -5}
+New client joined the socket :  ('127.0.0.1', 52567)
+New data :  {'pay': 'Alice', 'price': 5, 'payed': 'Bob', 'pricepayed': -5}
