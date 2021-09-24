@@ -1,7 +1,9 @@
 import socket
+import Transaction.Transaction as Trade
 import BlockchainClass as BC
 from threading import Thread
 from time import sleep
+import ast
 
 blockSizeLimit = 5
 
@@ -164,24 +166,32 @@ class Fullnode :
                 newmsgenc = user.recv(1024)
                 if newmsgenc :
                     newmsg = newmsgenc.decode()
-                    self.blockchain.addBuffer(newmsg)
+                    # print("msg get : ", newmsg)
+                    # self.blockchain.addBuffer(newmsg)
+                    msg = ast.literal_eval(newmsg)
+                    self.blockchain.addBuffer(Trade.makeRealTransaction(msg.get("price"), msg.get("pay"), msg.get("payed"), msg.get("pricepayed")))
 
     def threadMinningNode(self) :
         while True :
             txnList = []
             size = self.blockchain.getBufferSize()
-            while len(txnList) < blockSizeLimit and size > 0:
-                block = self.blockchain.getBufferPop()
-                size -= 1
-                currState = self.blockchain.getState()
-                validate = Trade.isValidTxn(block, currState)
-                if validate :
-                    txnList.append(block)
-                    self.blockchain.updateState(block, currState)
-                else:
-                    continue
-            self.blockchain.makeBlock(txnList)
-            sleep(0.5)
+            if size > 0 :
+                while len(txnList) < blockSizeLimit:
+                    if self.blockchain.getBufferSize() > 0 :
+                        block = self.blockchain.getBufferPop()
+                        size -= 1
+                        currState = self.blockchain.getState()
+                        validate = Trade.isValidTxn(block, currState)
+                        if validate :
+                            txnList.append(block)
+                            self.blockchain.setState(Trade.updateState(block, currState))
+                            print("New state : ", self.blockchain.getState())
+                        else:
+                            continue
+                    else:
+                        break
+                self.blockchain.makeBlock(txnList)
+            sleep(5)
 
     def run(self) :
         # Create Thread listen()

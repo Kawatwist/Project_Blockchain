@@ -1,7 +1,6 @@
 import Transaction.Hash as Hash
 
 blockSizeLimit = 5
-
 class Block :
     info = {}
     contents = ""
@@ -20,36 +19,37 @@ class Block :
             self.prev_hash = info["prev"]
         if info["curr_hash"] :
             self.curr_hash = info["curr_hash"]
-        if info["data"] : # data ? Only for first ?
-            self.data = info["data"]
+        # if info["data"] : # data ? Only for first ?
+        #     self.data = info["data"]
         if info["contents"] :
             self.contents = info["contents"]
 
     def getinfo(self) :
-        self.info["prev"] = self.prev_hash
-        self.info["curr_hash"] = self.curr_hash
-        self.info["data"] = self.data
-        self.info["contents"] = self.contents
-        return self.info
+        info = {}
+        info["prev"] = self.prev_hash
+        info["curr_hash"] = self.curr_hash
+        # info["data"] = self.data
+        info["contents"] = self.contents
+        return info
 
     def getLastHash(self) :
         return self.curr_hash
 
     def getBlockNumb(self) :
-        return self.data["blockNumber"]
+        return self.contents["contents"]["blockNumber"]
 
 class Blockchain :
     data = {u'Pool':500000}
     txnBuffer = []
     lastBlock = Block()
-    
+
     def __init__(self) :
         info = {}
         info["prev"] = 0x0
         info["txns"] = [self.data]
-        info["data"] = {u'blockNumber':0,u'parentHash':None,u'txnCount':1,u'txns':info["txns"]}
-        info["curr_hash"] = Hash.hashMe( info["data"] )
-        info["contents"] = {u'hash':info["curr_hash"],u'contents':info["data"]}
+        data = {u'blockNumber':0,u'parentHash':None,u'txnCount':1,u'txns':info["txns"]}
+        info["curr_hash"] = Hash.hashMe( data )
+        info["contents"] = {u'hash':info["curr_hash"],u'contents':data}
         genesisBlock = Block()
         genesisBlock.setinfo(info)
         self.chain = []
@@ -67,20 +67,31 @@ class Blockchain :
     def getState(self) :
         return self.data
 
-    def getState(self, state) :
+    def setState(self, state) :
         self.data = state
 
     def makeBlock(self, txnList) :
         if len(self.chain) is 0 :
             print("Chain Empty ?!", self.chain)
             return
+        saveinfo = {}
         for block in self.chain:
-            self.lastBlock.setinfo(block.getinfo)
+            if type(block) is type(Block()) :
+                # print("Info block ", block.getinfo())
+                saveinfo = block.getinfo()
+        saveBlock = Block()
+        saveBlock.setinfo(saveinfo)
         info = {}
-        info["prev"] = lastBlock.getLastHash()
+        info["prev"] = saveBlock.getLastHash()
         info["txns"] = [ txnList ] # Should be hashed
-        info["data"] = {u'blockNumber':(lastBlock.getBlockNumb() + 1),u'parentHash':info["prev"],u'txnCount':len(txnList),'txns':txnList}
-        info["curr_hash"] = Hash.hashMe(info["data"])
-        info["contents"] = {u'hash':info["curr_hash"],u'contents':info["data"]}
-        self.chain.append(info)
+        data = {u'blockNumber':(saveBlock.getBlockNumb() + 1),u'parentHash':info["prev"],u'txnCount':len(txnList),'txns':txnList}
+        info["curr_hash"] = Hash.hashMe(data)
+        info["contents"] = {u'hash':info["curr_hash"],u'contents':data}
+        newBlock = Block()
+        newBlock.setinfo(info)
+        self.chain.append(newBlock)
+        for block in self.chain:
+            if type(block) is type(Block()) :
+                print("Info block", block.getinfo()["contents"]["contents"]["blockNumber"], " : Nb txn :", block.getinfo()["contents"]["contents"]["txnCount"])
+                saveinfo = block.getinfo()
     

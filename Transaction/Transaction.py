@@ -23,8 +23,7 @@ def updateState(txn, state):
             state[key] = txn[key]
     return state
 
-    # Check the Validity
-def isValidTxn(txn,state):
+def isValidTxn(txn, state):
     if sum(txn.values()) != 0.0:
         print(sum(txn.values()))
         return False
@@ -37,3 +36,17 @@ def isValidTxn(txn,state):
             return False
     
     return True
+#     # Check the Validity
+# def isValidTxn(txn,state):
+#     if sum(txn.values()) != 0.0:
+#         print(sum(txn.values()))
+#         return False
+#     for key in txn.keys():
+#         if key in state.keys():
+#             acctBalance = state[key]
+#         else:
+#             acctBalance = 0
+#         if (acctBalance + txn[key]) < 0:
+#             return False
+    
+#     return True

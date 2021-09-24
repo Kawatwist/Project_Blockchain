@@ -5,9 +5,9 @@ import sys
 
 def main():
     port = 4243
-    pay = 'Alice'
+    pay = 'Bob'
     price = 5
-    payed = 'Bob'
+    payed = 'Alice'
     newclient = ''
     pricepayed = 5
     i = 0
@@ -26,8 +26,6 @@ def main():
     s = socket.socket()
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     host = "localhost"
-
-    # connect to host
     s.connect((host, port))
 
     msg = str(dict({"pay":pay, "price":price, "payed":payed, "pricepayed":pricepayed}))
