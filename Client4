@@ -1,9 +1,0 @@
-New connection ask : --connection{'host': 'localhost', 'port': 4243, 'name': 'Master'}
-Actually connected : [{'host': 'localhost', 'port': 4247, 'name': 'Client4'}, {'host': 'localhost', 'port': 4245, 'name': 'Master'}, {'host': 'localhost', 'port': 4245, 'name': 'Genesis'}]
-~[! Connection accepted !]~ : --connection{'host': 'localhost', 'port': 4243, 'name': 'Master'}
-New connection ask : --connection{'host': 'localhost', 'port': 4246, 'name': 'Client3'}
-Actually connected : [{'host': 'localhost', 'port': 4247, 'name': 'Client4'}, {'host': 'localhost', 'port': 4245, 'name': 'Master'}, {'host': 'localhost', 'port': 4245, 'name': 'Genesis'}, {'host': 'localhost', 'port': 4243, 'name': 'Master'}, {'host': 'localhost', 'port': 4244, 'name': 'Master'}, {'host': 'localhost', 'port': 4246, 'name': 'Client3'}]
-New connection ask : --connection{'host': 'localhost', 'port': 4244, 'name': 'Client1'}
-Actually connected : [{'host': 'localhost', 'port': 4247, 'name': 'Client4'}, {'host': 'localhost', 'port': 4245, 'name': 'Master'}, {'host': 'localhost', 'port': 4245, 'name': 'Genesis'}, {'host': 'localhost', 'port': 4243, 'name': 'Master'}, {'host': 'localhost', 'port': 4244, 'name': 'Master'}, {'host': 'localhost', 'port': 4246, 'name': 'Client3'}]
-New connection ask : --connection{'host': 'localhost', 'port': 4248, 'name': 'Client5'}
-Actually connected : [{'host': 'localhost', 'port': 4247, 'name': 'Client4'}, {'host': 'localhost', 'port': 4245, 'name': 'Master'}, {'host': 'localhost', 'port': 4245, 'name': 'Genesis'}, {'host': 'localhost', 'port': 4243, 'name': 'Master'}, {'host': 'localhost', 'port': 4244, 'name': 'Master'}, {'host': 'localhost', 'port': 4246, 'name': 'Client3'}, {'host': 'localhost', 'port': 4248, 'name': 'Client5'}]
