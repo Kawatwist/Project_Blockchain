@@ -41,12 +41,6 @@ class Fullnode :
             except Exception as ex :
                 print(ex)
                 return
-        # try :
-        #     self.openConnection("localhost", config.client)
-        # except Exception as ex :
-        #     print(ex)
-        #     return
-        # self.config = config
 
     def connectionOrigin(self, config) :
         try :
@@ -54,6 +48,10 @@ class Fullnode :
             self.originNode.connect((config.host, config.port))
             msg = "--connection" + str({"host":config.host, "port":self.myPort, "name":self.name})
             self.originNode.send(msg.encode())
+            save = dict({"host":config.host, "port":config.port, "sock":self.originNode})
+            self.listSoc.append(save)
+            save = dict({"host":config.host, "port":config.port, "name":"Genesis"})
+            self.listCo.append(save)
             threadReadNode = Thread(target = self.threadReaderNode, args = (self.originNode,))
             threadReadNode.start()
             print("Connection success")
@@ -63,9 +61,9 @@ class Fullnode :
     def checkAlreadyConnected(self, host, port) :
         for elem in self.listCo :
             if elem["host"] == host and elem["port"] == port :
-                print("check elem :", elem, "for", host, port, "Find !")
+                # print("check elem :", elem, "for", host, port, "Find !")
                 return True
-        print("check elem :", elem, "for", host, port, "Not found")
+        # print("check elem :", elem, "for", host, port, "Not found")
         return False
 
     def joinNewNode(self, host, port, name) :
@@ -85,8 +83,8 @@ class Fullnode :
                 save = dict({"host":host, "port":port, "name":name})
                 self.listCo.append(save)
                 print("Connection success")
-            else :
-                print("Already connected to ", host, port, " List node connected : ", self.listCo)
+            # else :
+            #     print("Already connected to ", host, port, " List node connected : ", self.listCo)
         except Exception as ex :
             print("Error for ", host, port)
             raise Exception(ex)
@@ -100,17 +98,8 @@ class Fullnode :
             threadReadNode.start()
             sleep(0.5)
 
-    # def openConnection(self, host, port) :
-    #     try :
-    #         print("Open connection", host, port)
-    #         self.mySocketClient.bind((host, port))
-    #         self.mySocketClient.listen()
-    #         print("Open connection", host, port, " Done\n")
-    #     except Exception as ex :
-    #         raise Exception(ex)
-
     def createNewConnection(self, newmsg:str, newsoc) :
-        print("New connection (--co) ", newmsg, "\n")
+        # print("New connection (--co) ", newmsg, "\n")
         write = "New connection ask : " + newmsg + "\n"
         self.fd.write(bytes(write.encode()))
         write = "Actually connected : " + str(self.listCo) + "\n"
@@ -120,15 +109,16 @@ class Fullnode :
         if not self.checkAlreadyConnected(addr["host"], addr["port"]) :
             write = "~[! Connection accepted !]~ : " + newmsg + "\n"
             self.fd.write(bytes(write.encode()))
-            for node in self.listSoc :
-                listNodeToSend = "--join" + str(self.listCo)
-                print("Send : ListSoc to ", node["host"], ":", node["port"], "SEND ", listNodeToSend)
-                node["sock"].send(listNodeToSend.encode())
+            self.fd.flush()
             save = dict({"host":addr["host"], "port":addr["port"],"sock":newsoc})
             self.listSoc.append(save)
             save = dict({"host":addr["host"], "port":addr["port"], "name":addr["name"]})
             self.listCo.append(save)
-
+            for node in self.listSoc :
+                print("Send to :", node["host"], ":", node["port"])
+                listNodeToSend = "--join" + str(self.listCo)
+                # print("Send : ListSoc to ", node["host"], ":", node["port"], "SEND ", listNodeToSend)
+                node["sock"].send(listNodeToSend.encode())
     def joinNewConnection(self, newmsg:str) :
         addr = eval(newmsg[newmsg.find("{"):-1])
         for soc in addr :
@@ -144,10 +134,12 @@ class Fullnode :
                 newmsg = newmsgenc.decode()
                 if len(newmsg) != 0 :
                     if not newmsg.find(str("--connection")) == -1 :
-                        print("New connection get : ", newmsg[newmsg.find(str("{")):])
+                        value = eval(newmsg[newmsg.find(str("{")):])
+                        print("New connection get : ", value["name"])
                         self.createNewConnection(newmsg, node)
                     elif not newmsg.find(str("--join")) == -1 :
-                        print("Join message get : ", newmsg[newmsg.find(str("[")):])
+                        value = eval(newmsg[newmsg.find(str("{")):newmsg.find(str("}"))+1])
+                        print("Join message get : ", value["name"])
                         self.joinNewConnection(newmsg)
                     else :
                         print("New data : ", newmsg, " from node ??")
@@ -166,8 +158,6 @@ class Fullnode :
                 newmsgenc = user.recv(1024)
                 if newmsgenc :
                     newmsg = newmsgenc.decode()
-                    # print("msg get : ", newmsg)
-                    # self.blockchain.addBuffer(newmsg)
                     msg = ast.literal_eval(newmsg)
                     self.blockchain.addBuffer(Trade.makeRealTransaction(msg.get("price"), msg.get("pay"), msg.get("payed"), msg.get("pricepayed")))
 
@@ -191,6 +181,7 @@ class Fullnode :
                     else:
                         break
                 self.blockchain.makeBlock(txnList)
+                print("New state : ", self.blockchain.getState())
             sleep(5)
 
     def run(self) :
