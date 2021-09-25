@@ -41,7 +41,9 @@ class Block :
 class Blockchain :
     data = {u'Pool':500000}
     txnBuffer = []
+    blockBuffer = []
     lastBlock = Block()
+    lastHash = 0x0
 
     def __init__(self) :
         info = {}
@@ -52,12 +54,26 @@ class Blockchain :
         info["contents"] = {u'hash':info["curr_hash"],u'contents':data}
         genesisBlock = Block()
         genesisBlock.setinfo(info)
+        lastBlock = genesisBlock
+        self.lastHash = None
         self.chain = []
         self.chain.append(genesisBlock)
+
+    def getChain(self) :
+        return self.chain
+
+    def addBlockBuffer(self, msg) :
+        self.blockBuffer.append(msg)
+    
+    def getBlockBufferPop(self) :
+        return self.blockBuffer.pop()
 
     def addBuffer(self, msg) :
         self.txnBuffer.append(msg)
     
+    def getBlockBufferSize(self) :
+        return len(self.blockBuffer)
+
     def getBufferSize(self) :
         return len(self.txnBuffer)
     
@@ -70,6 +86,10 @@ class Blockchain :
     def setState(self, state) :
         self.data = state
 
+    def tryAddBlock(self, block) :
+        self.makeBlock(block["contents"]["txns"])
+        return True
+
     def makeBlock(self, txnList) :
         if len(self.chain) is 0 :
             print("Chain Empty ?!", self.chain)
@@ -77,7 +97,6 @@ class Blockchain :
         saveinfo = {}
         for block in self.chain:
             if type(block) is type(Block()) :
-                # print("Info block ", block.getinfo())
                 saveinfo = block.getinfo()
         saveBlock = Block()
         saveBlock.setinfo(saveinfo)
@@ -88,10 +107,12 @@ class Blockchain :
         info["curr_hash"] = Hash.hashMe(data)
         info["contents"] = {u'hash':info["curr_hash"],u'contents':data}
         newBlock = Block()
+        self.lastHash = info["curr_hash"]
         newBlock.setinfo(info)
         self.chain.append(newBlock)
         for block in self.chain:
             if type(block) is type(Block()) :
                 print("Info block", block.getinfo()["contents"]["contents"]["blockNumber"], " : Nb txn :", block.getinfo()["contents"]["contents"]["txnCount"])
                 saveinfo = block.getinfo()
+        return newBlock
     

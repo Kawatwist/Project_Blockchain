@@ -24,6 +24,7 @@ def updateState(txn, state):
     return state
 
 def isValidTxn(txn, state):
+    print("Txn is valid ? : ", txn, "Curr :", state)
     if sum(txn.values()) != 0.0:
         print(sum(txn.values()))
         return False
