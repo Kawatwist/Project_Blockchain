@@ -20,6 +20,7 @@ helperClass = {
     'lightweight': "Block creation node, this node cannot validate a block, its only use to create a transaction"
 }
 
+
 class Config :
     type = "full"
     port = 4242

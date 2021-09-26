@@ -112,7 +112,7 @@ class Blockchain :
         self.chain.append(newBlock)
         for block in self.chain:
             if type(block) is type(Block()) :
-                print("Info block", block.getinfo()["contents"]["contents"]["blockNumber"], " : Nb txn :", block.getinfo()["contents"]["contents"]["txnCount"])
+                # print("Info block", block.getinfo()["contents"]["contents"]["blockNumber"], " : Nb txn :", block.getinfo()["contents"]["contents"]["txnCount"])
                 saveinfo = block.getinfo()
         return newBlock
     
