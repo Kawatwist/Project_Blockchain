@@ -1,15 +1,14 @@
-from FullnodeClass import Fullnode
-from LightnodeClass import Lightnode
-from GenesisnodeClass import Genesisnode
+from Fullnode.FullnodeClass import Fullnode
+from Genesisnode.GenesisnodeClass import Genesisnode
 
 nodeName = {"full", "genesis", "light", "archive", "lightweight"}
 
 handlersClass = {
-    'full': Fullnode,
+    'full':Fullnode,
     'genesis': Genesisnode,
-    'light':  Lightnode,
-    'archive': Fullnode,
-    'lightweight': Fullnode,
+    'light':  Fullnode,
+    'archive': Fullnode, # ! OLD VERSION !
+    'lightweight': Fullnode, # ! OLD VERSION !
 }
 
 helperClass = {
@@ -20,58 +19,55 @@ helperClass = {
     'lightweight': "Block creation node, this node cannot validate a block, its only use to create a transaction"
 }
 
-
 class Config :
-    type = "full"
-    port = 4242
+    typenode = "Nothing"
+    hostPort = 4242
     host = "localhost"
-    node = 4243
-    client = 4244
-    first = False
+    nodePort = 4243
+    clientPort = 4343
     name = ""
+    master = False
 
     def __init__(self, args) :
-        if args.node :
-            self.setType(args.node)
-        if args.port :
-            self.setPort(args.port)
+        if args.nodeType :
+            self.setType(args.nodeType)
+        if args.hostPort :
+            self.setPort(args.hostPort)
         if args.host :
             self.setHost(args.host)
-        if args.portNode :
-            self.setPortNode(args.portNode)
-        if args.portClient :
-            self.setPortClient(args.portClient)
-        if args.new :
-            self.first = args.new
+        if args.nodePort :
+            self.setPortNode(args.nodePort)
+        if args.clientPort :
+            self.setPortClient(args.clientPort)
         if args.name :
             self.name = args.name
 
     def printInfo(self) :
-        print("\tType :", self.type)
-        print("\tPort :", self.port)
+        print("\tType :", self.typenode)
+        print("\tPort :", self.hostPort)
         print("\tHost :", self.host)
-        print("\tPortNode :", self.node)
-        print("\tClient :", self.client)
+        print("\tPortNode :", self.nodePort)
+        print("\tClient :", self.clientPort)
 
     def setType(self, newtype) :
-        self.type = newtype.lower()
+        self.typenode = newtype.lower()
     def setPort(self, newport) :
-        self.port = newport
+        self.hostPort = newport
     def setHost(self, newhost) :
         self.host = newhost
     def setPortNode(self, newportnode) :
-        self.node = newportnode
+        self.nodePort = newportnode
     def setPortClient(self, newportclient) :
-        self.client = newportclient
+        self.clientPort = newportclient
     def setFirstNode(self, first) :
-        self.first = first
+        self.master = first
 
     def createNode(self) :
-        if self.type in nodeName :
+        if self.typenode in nodeName :
             print("Creation node : ")
             self.printInfo()
-            self.node = handlersClass[self.type.lower()](self)
-        elif self.type == "help" :
+            self.node = handlersClass[self.typenode.lower()](self)
+        elif self.typenode == "help" :
             print("Possible choice :", nodeName, "\n")
             for node in helperClass :
                 print(node, " : ", helperClass[node])

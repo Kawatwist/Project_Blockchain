@@ -1,6 +1,7 @@
-import Transaction.Hash as Hash
+import Tools.Hash as Hash
 
 blockSizeLimit = 5
+
 class Block :
     info = {}
     contents = ""
@@ -116,3 +117,6 @@ class Blockchain :
                 saveinfo = block.getinfo()
         return newBlock
     
+class ShareBc(object):
+    blockchain = Blockchain()
+        

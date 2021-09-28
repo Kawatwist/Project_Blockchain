@@ -1,4 +1,5 @@
 import socket
+from FormatMsg import *
 import Transaction.Transaction as Trade
 import BlockchainClass as BC
 from threading import Thread
@@ -7,7 +8,7 @@ import ast
 
 blockSizeLimit = 5
 
-class Genesisnode :
+class NewFullnode :
     blockchain = BC.Blockchain()
     listUser = [] # User connected to this node
     listNode = [] # Other Node connected at me
@@ -26,7 +27,6 @@ class Genesisnode :
         self.myHost = "localhost"
         self.myPort = config.node
         self.name = config.name
-        self.fd = open(self.name, "wb")
         save = dict({"host":self.myHost, "port":self.myPort, "name":self.name})
         self.listCo.append(save)
         self.mySocketNode.bind(("localhost", config.node))
@@ -46,8 +46,7 @@ class Genesisnode :
         try :
             print("Connection Host ", config.host, ":", config.port)
             self.originNode.connect((config.host, config.port))
-            msg = "--connection" + str({"host":config.host, "port":self.myPort, "name":self.name})
-            self.originNode.send(msg.encode())
+            # createPackage(0, str({"host":config.host, "port":self.myPort, "name":self.name}), newNode)
             save = dict({"host":config.host, "port":config.port, "sock":self.originNode})
             self.listSoc.append(save)
             save = dict({"host":config.host, "port":config.port, "name":"Genesis"})
@@ -61,9 +60,7 @@ class Genesisnode :
     def checkAlreadyConnected(self, host, port) :
         for elem in self.listCo :
             if elem["host"] == host and elem["port"] == port :
-                # print("check elem :", elem, "for", host, port, "Find !")
                 return True
-        # print("check elem :", elem, "for", host, port, "Not found")
         return False
 
     def joinNewNode(self, host, port, name) :
@@ -74,8 +71,7 @@ class Genesisnode :
                 newNode.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 newNode.connect((host, port))
                 self.listNode.append(newNode)
-                msg = "--connection" + str({"host":self.myHost, "port":self.myPort, "name":self.name})
-                newNode.send(msg.encode())
+                createPackage(0, str({"host":self.myHost, "port":self.myPort, "name":self.name}), newNode)
                 threadReadNode = Thread(target = self.threadReaderNode, args = (newNode,))
                 threadReadNode.start()
                 save = dict({"host":host, "port":port,"sock":newNode})
@@ -83,8 +79,6 @@ class Genesisnode :
                 save = dict({"host":host, "port":port, "name":name})
                 self.listCo.append(save)
                 print("Connection success")
-            # else :
-            #     print("Already connected to ", host, port, " List node connected : ", self.listCo)
         except Exception as ex :
             print("Error for ", host, port)
             raise Exception(ex)
@@ -92,56 +86,78 @@ class Genesisnode :
     def threadAcceptNode(self) :
         while True:
             co, addr = self.mySocketNode.accept()
-            print("New client joined the socket : ", addr)
+            print("New Node joined the socket : ", addr)
+            #SEND TO EVERYONE HERE
             self.listNode.append(co)
             threadReadNode = Thread(target = self.threadReaderNode, args = (co,))
             threadReadNode.start()
             sleep(0.5)
 
+    def sendBlockchain(self, newsoc) :
+        if self.blockchain :
+            chain = self.blockchain.getChain()
+            if chain :
+                for block in chain :
+                    if block.getinfo()["contents"]["contents"]["blockNumber"] :
+                        createPackage(2, str(block.getinfo()["contents"]), newsoc)
+
     def createNewConnection(self, newmsg:str, newsoc) :
-        # print("New connection (--co) ", newmsg, "\n")
-        write = "New connection ask : " + newmsg + "\n"
-        self.fd.write(bytes(write.encode()))
-        write = "Actually connected : " + str(self.listCo) + "\n"
-        self.fd.write(bytes(write.encode()))
-        self.fd.flush()
+        print("New connection found")
         addr = eval(newmsg[newmsg.find(str("{")):])
         if not self.checkAlreadyConnected(addr["host"], addr["port"]) :
-            write = "~[! Connection accepted !]~ : " + newmsg + "\n"
-            self.fd.write(bytes(write.encode()))
-            self.fd.flush()
+            print("Check not found")
             save = dict({"host":addr["host"], "port":addr["port"],"sock":newsoc})
             self.listSoc.append(save)
             save = dict({"host":addr["host"], "port":addr["port"], "name":addr["name"]})
             self.listCo.append(save)
             for node in self.listSoc :
                 print("Send to :", node["host"], ":", node["port"])
-                listNodeToSend = "--join" + str(self.listCo)
-                # print("Send : ListSoc to ", node["host"], ":", node["port"], "SEND ", listNodeToSend)
-                node["sock"].send(listNodeToSend.encode())
+                createPackage(1, str(self.listCo), node["sock"])
+            self.sendBlockchain(newsoc)
 
     def joinNewConnection(self, newmsg:str) :
-        addr = eval(newmsg[newmsg.find("{"):-1])
+        addr = eval(newmsg[newmsg.find("{"):newmsg.find("]")])
         for soc in addr :
             if not type(soc) == str:
                 data = eval(str(soc))
                 if data["host"] and data["port"] :
                     self.joinNewNode(data["host"], data["port"], data["name"])
+        if not newmsg.find("--newBlock") == -1 :
+            truncmsg = newmsg[newmsg.find("--newBlock") + 10:]
+            while True :
+                if not truncmsg.find(str("--newBlock")) == -1:
+                    self.blockchain.addBlockBuffer(eval(truncmsg[:truncmsg.find("--newBlock")]))
+                    truncmsg = newmsg[newmsg.find("--newBlock") + 10:]
+                else :
+                    self.blockchain.addBlockBuffer(eval(truncmsg))
+                    break
 
     def threadReaderNode(self, node) :
+        print("New Node reader created")
         while True:
-            newmsgenc = node.recv(1024)
+            newmsghdenc = node.recv(headersz)
+            print("Msg :", newmsghdenc)
+            if newmsghdenc :
+                newmsgdec = newmsghdenc.decode()
+                lenmsg = int(newmsgdec[newmsgdec.find('[') +1:newmsgdec.find(']')])
+                print("Lenmsg : ", lenmsg)
+                newmsgenc = node.recv(lenmsg)
+            else :
+                exit()
+                continue
             if newmsgenc :
                 newmsg = newmsgenc.decode()
                 if len(newmsg) != 0 :
-                    if not newmsg.find(str("--connection")) == -1 :
+                    if not newmsgdec.find(str(head[0])) == -1 :
                         value = eval(newmsg[newmsg.find(str("{")):])
                         print("New connection get : ", value["name"])
                         self.createNewConnection(newmsg, node)
-                    elif not newmsg.find(str("--join")) == -1 :
+                    elif not newmsgdec.find(head[1]) == -1 :
                         value = eval(newmsg[newmsg.find(str("{")):newmsg.find(str("}"))+1])
                         print("Join message get : ", value["name"])
                         self.joinNewConnection(newmsg)
+                    elif not newmsgdec.find(head[2]) == -1 :
+                        print("Block : ", newmsgdec)
                     else :
                         print("New data : ", newmsg, " from node ??")
             sleep(0.5)
@@ -164,6 +180,21 @@ class Genesisnode :
 
     def threadMinningNode(self) :
         while True :
+            sizeBlockBuff = self.blockchain.getBlockBufferSize()
+            while sizeBlockBuff > 0 :
+                block = self.blockchain.getBlockBufferPop()
+                print(sizeBlockBuff, "Block Receive by master : ", block)
+                for txn in block["contents"]["txns"] :
+                    currState = self.blockchain.getState()
+                    # print("\n", block["contents"]["txnCount"] ,"Transaction : ", txn)
+                    validate = Trade.isValidTxn(txn, currState)
+                    print("txn valide :", validate)
+                    if validate == True :
+                        self.blockchain.setState(Trade.updateState(txn, currState))
+                self.blockchain.tryAddBlock(block)
+                print(self.blockchain.getState())
+                sizeBlockBuff = self.blockchain.getBlockBufferSize()
+                
             txnList = []
             size = self.blockchain.getBufferSize()
             if size > 0 :
@@ -181,12 +212,14 @@ class Genesisnode :
                             continue
                     else:
                         break
-                self.blockchain.makeBlock(txnList)
-                print("New state : ", self.blockchain.getState())
-            sleep(5)
+                newBlock = self.blockchain.makeBlock(txnList)
+                #Send it to everyone !
+                for node in self.listSoc :
+                    if newBlock.getinfo()["contents"]["contents"]["blockNumber"] :
+                        createPackage(2, str(newBlock.getinfo()["contents"]), node["sock"])
+            sleep(2)
 
     def run(self) :
-        # Create Thread listen()
         threadAcptNode = Thread(target = self.threadAcceptNode, args = ())
         threadAcptNode.start()
         threadClNode = Thread(target = self.threadClientNode, args = ())
