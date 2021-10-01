@@ -14,34 +14,35 @@ def CreateThread(ThreadFunction, name, args) :
     threadId.start()
     return (dict({"ThreadId":threadId, "name":name}))
 
-def ThreadListenNode(node) :
+def ThreadListenNode(node, host, hostport, GN) :
     while True:
         co, addr = node.accept()
-        CreateThread(ThreadAcceptNode, "Im a fake Genesis", (co,))
+        CreateThread(ThreadAccept, "Genesis", (co, GN))
 
-def ThreadAcceptNode(node) :
+def ThreadAccept(node, self) :
     HeaderConnection = node.recv(headersz)
-    if not HeaderConnection :
-        print("Connection failed")
-        return
-    else :
+    if HeaderConnection :
         Header = HeaderConnection.decode()
         typemsg = str(Header[0 : 4])
         lenmsg = int(Header[Header.find('[') +1:Header.find(']')])
         ConnectionEnc = node.recv(lenmsg)
         if ConnectionEnc :
             msg = ConnectionEnc.decode()
+            msgdict = eval(msg)
         else :
             print("Connection failed on message :", Header)
             return
         if not typemsg == str(head[0]) :
             print("Incorrect Head :", typemsg, "!=", str(head[0]));
-            print("Connection failed :", msg)
-            return
-        print("Welcome to ", msg)
-    ThreadNode(node, msg)
+        print("Welcome to ", msgdict["name"])
+    else :
+        print("Connection failed")
+        return
+    dictSocket = dict({"host":msgdict["host"], "port":msgdict["port"], "name":msgdict["name"], "socket":node})
+    self.listSoc.append(dictSocket)
+    ThreadGenesis(node, msg, self, dictSocket)
 
-def ThreadNode(node, me) :
+def ThreadGenesis(node, info, self, dictSock) :
     while True:
         headerEnc = node.recv(headersz)
         if headerEnc :
@@ -50,7 +51,8 @@ def ThreadNode(node, me) :
             lenmsg = int(header[header.find('[') +1:header.find(']')])
             newmsgEnc = node.recv(lenmsg)
         else :
-            print("Message empty we close connection")
+            print("Message empty we close connection to ", info)
+            self.listSoc.remove(dictSock)
             exit()
             continue
         if newmsgEnc :
@@ -58,34 +60,7 @@ def ThreadNode(node, me) :
             if len(msg) != 0 :
                 print("Message connection :", typemsg, " For ", msg)
                 if typemsg == str(head[0]) :
-                    print("New connection (Node should be impossible)")
-                elif typemsg == str(head[1]) :
-                    print("Join connection")
-                elif typemsg == str(head[2]) :
-                    print("Block")
-                else :
-                    print("Invalid Type")
-        sleep(0.5)
-
-def ThreadToGenesis(node, me) :
-    createPackage(0, str(me), node)
-    while True:
-        headerEnc = node.recv(headersz)
-        if headerEnc :
-            header = headerEnc.decode()
-            typemsg = str(header[0 : 4])
-            lenmsg = int(header[header.find('[') +1:header.find(']')])
-            newmsgEnc = node.recv(lenmsg)
-        else :
-            print("Message empty we close connection")
-            exit()
-            continue
-        if newmsgEnc :
-            msg = newmsgEnc.decode()
-            if len(msg) != 0 :
-                print("Message connection :", typemsg, " For ", msg)
-                if typemsg == str(head[0]) :
-                    print("New connection (Genesis should be impossible)")
+                    print("New connection")
                 elif typemsg == str(head[1]) :
                     print("Join connection")
                 elif typemsg == str(head[2]) :

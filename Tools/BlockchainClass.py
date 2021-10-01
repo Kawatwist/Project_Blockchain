@@ -119,4 +119,4 @@ class Blockchain :
     
 class ShareBc(object):
     blockchain = Blockchain()
-        
+    listNode = [] # Node info (without socket for sending)

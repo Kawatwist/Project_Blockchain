@@ -1,10 +1,10 @@
-[ ] Blockchain
-[ ] Give Value
-[ ] Connection Wallet
-[ ] Find User
-[ ] Ask Transaction
-[ ] Validate Transaction
-
+[ ] Create a genesis node
+[ ] Make it open to client
+[ ] Create a mempool from client request
+[ ] Create a full node
+[ ] Share connection to other node
+[ ] Share mempool + block validation
+[ ] Create a archive & light node
 
 [Blockchain] -> [Blockchain]
 

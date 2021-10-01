@@ -25,12 +25,20 @@ class Fullnode :
 
     def run(self) :
         # Create my connection to the Genesis / First Node
+        Me = dict({"host":self.Host, "port":self.NodePort, "name":self.Name})
         GenesisSocket = initConnection(self.Host, self.HostPort, "Genesis")
         self.listSoc.append(GenesisSocket)
-        self.threadId.append(CreateThread(ThreadToGenesis, "Genesis", (GenesisSocket["socket"],)))
+        self.threadId.append(CreateThread(ThreadToGenesis, "Genesis", (GenesisSocket["socket"], Me,)))
 
         # Create my connection for the Client
         # /!\ self.Host (should be myIP for this one) /!\ #
         ClientSocket = initConnectionListen(self.Host, self.ClientPort, "ClientOrigin")
         self.listUser.append(ClientSocket)
         self.threadId.append(CreateThread(ThreadListenClient, "Client", (ClientSocket["socket"],)))
+
+        # Thread Validate / Add new Block to Blockchain
+
+        # Manage new node connection
+        OwnSocket = initConnectionListen(self.Host, self.NodePort, "NodeOrigin")
+        self.listSoc.append(OwnSocket)
+        self.threadId.append(CreateThread(ThreadListenNode, "Me", (OwnSocket["socket"], )))
