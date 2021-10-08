@@ -1,12 +1,20 @@
 from Fullnode.FullnodeClass import Fullnode
 from Genesisnode.GenesisnodeClass import Genesisnode
 
-nodeName = {"full", "genesis", "light", "archive", "lightweight"}
+import pkg_resources
+installed = {pkg.key for pkg in pkg_resources.working_set}
+if 'pyqt5' in installed :
+    from Watchernode.WatchernodeClass import Watchernode
+else :
+    Watchernode = "NotDefined"
+
+nodeName = {"full", "genesis", "light", "archive", "lightweight", "watcher"}
 
 handlersClass = {
     'full':Fullnode,
     'genesis': Genesisnode,
-    'light':  Fullnode,
+    'watcher': Watchernode,
+    'light':  Fullnode,# ! OLD VERSION !
     'archive': Fullnode, # ! OLD VERSION !
     'lightweight': Fullnode, # ! OLD VERSION !
 }
@@ -66,12 +74,16 @@ class Config :
         if self.typenode in nodeName :
             print("Creation node : ")
             self.printInfo()
-            self.node = handlersClass[self.typenode.lower()](self)
+            if self.typenode.lower() == "watcher" and Watchernode == "NotDefined" :
+                print("PyQt5 is requiered to start in watcher mode")
+                self.node = False
+            else :
+                self.node = handlersClass[self.typenode.lower()](self)
+
         elif self.typenode == "help" :
             print("Possible choice :", nodeName, "\n")
             for node in helperClass :
                 print(node, " : ", helperClass[node])
         else :
             print("Invalid node, possible choice :", nodeName)
-            exit
         # Call the right node constructor

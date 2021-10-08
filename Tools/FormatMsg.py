@@ -1,5 +1,5 @@
 headersz = 11
-head = ["--co","--jo","--bl","--tx"]
+head = ["--co","--jo","--bl","--tx", "test"]
 
 def createHeaderPackage(typeask, size) :
     header = head[typeask] + "["+ str(size).zfill(5) + "]"
@@ -7,6 +7,9 @@ def createHeaderPackage(typeask, size) :
 
 def createPackage(typeask, msg, sock) :
     headmsg = createHeaderPackage(typeask, len(msg))
-    sock.send(headmsg.encode())
+    print("Head :", headmsg)
+    headenc = headmsg.encode()
+    print("Headenc :", headenc)
+    sock.send(headenc)
     sock.send(msg.encode())
 

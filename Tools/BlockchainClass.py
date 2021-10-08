@@ -47,6 +47,7 @@ class Blockchain :
     lastHash = 0x0
 
     def __init__(self) :
+        print("New Blockchain defined")
         info = {}
         info["prev"] = 0x0
         info["txns"] = [self.data]
@@ -118,5 +119,5 @@ class Blockchain :
         return newBlock
     
 class ShareBc(object):
-    blockchain = Blockchain()
+    # blockchain = Blockchain()
     listNode = [] # Node info (without socket for sending)

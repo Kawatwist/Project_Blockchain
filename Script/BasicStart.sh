@@ -5,4 +5,6 @@ case $1 in "1")  echo "Master"; python3 -B Main.py --nodeType Genesis --host "lo
 "5") echo "[4] Connection to [2]"; python3 -B Main.py --nodeType Full --hostPort 4245 --host "localhost" --nodePort 4247 --clientPort 4347 --name Client4 ;;
 "6") echo "[5] Connection to [2]"; python3 -B Main.py --nodeType Full --hostPort 4245 --host "localhost" --nodePort 4248 --clientPort 4348 --name Client5 ;;
 "7") echo "[6] Connection to Master"; python3 -B Main.py --nodeType Full --hostPort 4243 --host "localhost" --nodePort 4249 --clientPort 4349 --name Client6 ;;
+"8") echo "[7] Connection to Master"; python3 -B Main.py --nodeType Full --hostPort 4243 --host "localhost" --nodePort 4250 --clientPort 4350 --name Client6 ;;
+"view") echo "[6] Connection to Master"; python3 -B Main.py --nodeType Watcher --hostPort 4243 --host "localhost" --nodePort 4250 --clientPort 4350 --name Watcher ;;
 esac

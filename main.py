@@ -15,7 +15,8 @@ def main():
 
     config = cf(args)
     config.createNode()
-    config.node.run()
+    if config.node :
+        config.node.run()
 
 if __name__ == '__main__':
     main()

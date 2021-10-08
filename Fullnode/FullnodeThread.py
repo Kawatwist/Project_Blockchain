@@ -1,5 +1,6 @@
 from Tools.FormatMsg import *
 from Tools.Connection import *
+from Tools.Already_connected import *
 from Tools.BlockchainClass import ShareBc as bck
 
 import Tools.BlockchainClass as bc
@@ -14,34 +15,49 @@ def CreateThread(ThreadFunction, name, args) :
     threadId.start()
     return (dict({"ThreadId":threadId, "name":name}))
 
-def ThreadListenNode(node) :
+def ThreadListenNode(node, FN) :
     while True:
         co, addr = node.accept()
-        CreateThread(ThreadAcceptNode, "Im a fake Genesis", (co,))
+        FN.threadId.append(CreateThread(ThreadAcceptNode, addr, (co, FN)))
+        #SEND TO EVERYONE A TESTMSG
+        for soc in FN.listSoc :
+            if soc["name"] == "NodeOrigin" :
+                continue
+            createPackage(4, "POG TEST", soc["socket"])
 
-def ThreadAcceptNode(node) :
+def ThreadAcceptNode(node, self) :
     HeaderConnection = node.recv(headersz)
-    if not HeaderConnection :
-        print("Connection failed")
-        return
-    else :
+    print("RECV :", HeaderConnection)
+    if HeaderConnection :
         Header = HeaderConnection.decode()
         typemsg = str(Header[0 : 4])
         lenmsg = int(Header[Header.find('[') +1:Header.find(']')])
         ConnectionEnc = node.recv(lenmsg)
         if ConnectionEnc :
             msg = ConnectionEnc.decode()
+            msgdict = eval(msg)
         else :
             print("Connection failed on message :", Header)
             return
         if not typemsg == str(head[0]) :
             print("Incorrect Head :", typemsg, "!=", str(head[0]));
-            print("Connection failed :", msg)
-            return
-        print("Welcome to ", msg)
-    ThreadNode(node, msg)
+        print("Welcome to ", msgdict["name"])
+    else :
+        print("Connection failed (Header in AcceptNode)")
+        return
+    dictSocket = dict({"host":msgdict["host"], "port":msgdict["port"], "name":msgdict["name"], "socket":node})
+    sendSocket = dict({"host":msgdict["host"], "port":msgdict["port"], "name":msgdict["name"]})
+    if len(self.listSoc) > 1 :
+        #Send to everyone connection
+        for soc in self.listSoc :
+            if soc["name"] == "NodeOrigin" :
+                continue
+            print("Send to : ", soc["name"])
+            createPackage(1, str(sendSocket), soc["socket"])
+    self.listSoc.append(dictSocket)
+    ThreadNode(node, msg, dictSocket, self)
 
-def ThreadNode(node, me) :
+def ThreadNode(node, me, dictSocket, self) :
     while True:
         headerEnc = node.recv(headersz)
         if headerEnc :
@@ -51,6 +67,7 @@ def ThreadNode(node, me) :
             newmsgEnc = node.recv(lenmsg)
         else :
             print("Message empty we close connection")
+            self.listSoc.remove(dictSocket)
             exit()
             continue
         if newmsgEnc :
@@ -61,13 +78,26 @@ def ThreadNode(node, me) :
                     print("New connection (Node should be impossible)")
                 elif typemsg == str(head[1]) :
                     print("Join connection")
+                    dmsg = eval(msg)
+                    if not IsAlreadyConnected(dmsg["host"], dmsg["port"], self.listSoc) :
+                        JoinSocket = joinConnection(msg, self)
+                        JoinClearSocket = dict({"host":JoinSocket["host"], "port":JoinSocket["port"], "name":JoinSocket["name"]})
+                        self.threadId.append(CreateThread(ThreadNode, JoinSocket["name"], (JoinSocket["socket"], JoinClearSocket, JoinSocket, self)))
+                        #SEND TO EVERYONE A TESTMSG
+                        for soc in self.listSoc :
+                            if soc["name"] == "NodeOrigin" :
+                                continue
+                            print("Send to :", soc["name"])
+                            createPackage(4, "POGZZ", soc["socket"])
                 elif typemsg == str(head[2]) :
                     print("Block")
+                elif typemsg == str(head[4]) :
+                    print("MSG : ", msg)
                 else :
                     print("Invalid Type")
         sleep(0.5)
 
-def ThreadToGenesis(node, me) :
+def ThreadToGenesis(node, me, self, dictSocket) :
     createPackage(0, str(me), node)
     while True:
         headerEnc = node.recv(headersz)
@@ -77,28 +107,40 @@ def ThreadToGenesis(node, me) :
             lenmsg = int(header[header.find('[') +1:header.find(']')])
             newmsgEnc = node.recv(lenmsg)
         else :
-            print("Message empty we close connection")
+            print("Message empty we close connection (ToGenesisFunction)")
+            self.listSoc.remove(dictSocket)
             exit()
             continue
         if newmsgEnc :
             msg = newmsgEnc.decode()
             if len(msg) != 0 :
                 print("Message connection :", typemsg, " For ", msg)
-                if typemsg == str(head[0]) :
-                    print("New connection (Genesis should be impossible)")
-                elif typemsg == str(head[1]) :
+                if typemsg == str(head[1]) :
                     print("Join connection")
+                    dmsg = eval(msg)
+                    if not IsAlreadyConnected(dmsg["host"], dmsg["port"], self.listSoc) :
+                        JoinSocket = joinConnection(msg, self)
+                        self.listSoc.append(JoinSocket)
+                        JoinClearSocket = dict({"host":JoinSocket["host"], "port":JoinSocket["port"], "name":JoinSocket["name"]})
+                        self.threadId.append(CreateThread(ThreadNode, JoinSocket["name"], (JoinSocket["socket"], JoinClearSocket, JoinSocket, self)))
+                        #SEND TO EVERYONE A TESTMSG
+                        for soc in self.listSoc :
+                            if soc["name"] == "NodeOrigin" :
+                                continue
+                            createPackage(4, "POG TEST", soc["socket"])
                 elif typemsg == str(head[2]) :
                     print("Block")
+                elif typemsg == str(head[4]) :
+                    print("MSG :", msg)
                 else :
                     print("Invalid Type")
         sleep(0.5)
 
-def ThreadListenClient(node) :
+def ThreadListenClient(node, FN) :
     while True:
         co, addr = node.accept()
         print("New client joined the socket : ", addr)
-        CreateThread(ThreadParseClient, "Client", (co,))
+        FN.threadId.append(CreateThread(ThreadParseClient, "User :" + addr, (co,)))
 
 def ThreadParseClient(node) :
     while True:

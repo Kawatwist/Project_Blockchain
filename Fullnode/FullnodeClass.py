@@ -24,21 +24,31 @@ class Fullnode :
         self.Name = config.name                        
 
     def run(self) :
-        # Create my connection to the Genesis / First Node
-        Me = dict({"host":self.Host, "port":self.NodePort, "name":self.Name})
-        GenesisSocket = initConnection(self.Host, self.HostPort, "Genesis")
-        self.listSoc.append(GenesisSocket)
-        self.threadId.append(CreateThread(ThreadToGenesis, "Genesis", (GenesisSocket["socket"], Me,)))
 
         # Create my connection for the Client
         # /!\ self.Host (should be myIP for this one) /!\ #
         ClientSocket = initConnectionListen(self.Host, self.ClientPort, "ClientOrigin")
         self.listUser.append(ClientSocket)
-        self.threadId.append(CreateThread(ThreadListenClient, "Client", (ClientSocket["socket"],)))
+        self.threadId.append(CreateThread(ThreadListenClient, "ThreadUser", (ClientSocket["socket"], self)))
 
         # Thread Validate / Add new Block to Blockchain
 
         # Manage new node connection
         OwnSocket = initConnectionListen(self.Host, self.NodePort, "NodeOrigin")
         self.listSoc.append(OwnSocket)
-        self.threadId.append(CreateThread(ThreadListenNode, "Me", (OwnSocket["socket"], )))
+        self.threadId.append(CreateThread(ThreadListenNode, "ThreadNodeAccept", (OwnSocket["socket"], self)))
+        
+        # Create my connection to the Genesis / First Node
+        Me = dict({"host":self.Host, "port":self.NodePort, "name":self.Name})
+        GenesisSocket = initConnection(self.Host, self.HostPort, "Genesis")
+        self.listSoc.append(GenesisSocket)
+        self.threadId.append(CreateThread(ThreadToGenesis, "MyGenesis", (GenesisSocket["socket"], Me, self, GenesisSocket)))
+        while True :
+            print("\n")
+            for connected in self.listSoc :
+                print("=>", connected["name"])
+            for threadId in self.threadId :
+                print("Thread :", str(threadId["name"]).ljust(25), "state :", threadId["ThreadId"].is_alive())
+                if not threadId["ThreadId"].is_alive() :
+                    self.threadId.remove(threadId)
+            sleep(5)
