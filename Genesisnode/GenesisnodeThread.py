@@ -15,7 +15,7 @@ def CreateThread(ThreadFunction, name, args) :
     threadId.start()
     return (dict({"ThreadId":threadId, "name":name}))
 
-def ThreadListenNodePort(node, info, self, dictSock) :
+def ThreadListenNodePort(node, info, GN, dictSock) :
     while True:
         headerEnc = node.recv(headersz)
         if headerEnc :
@@ -25,7 +25,7 @@ def ThreadListenNodePort(node, info, self, dictSock) :
             newmsgEnc = node.recv(lenmsg)
         else :
             print("Message empty we close connection to ", info)
-            self.listSoc.remove(dictSock)
+            GN.listSoc.remove(dictSock)
             exit()
             continue
         if newmsgEnc :
@@ -35,10 +35,10 @@ def ThreadListenNodePort(node, info, self, dictSock) :
                 if typemsg == str(head[1]) :
                     print("Join connection")
                     dmsg = eval(msg)
-                    if not IsAlreadyConnected(dmsg["host"], dmsg["port"], self.listSoc) :
-                        JoinSocket = joinConnection(msg, self)
-                        self.listSoc.append(JoinSocket)
-                        self.threadId.append(CreateThread(ThreadListenNodePort, JoinSocket["name"], (JoinSocket["socket"], JoinSocket["host"], JoinSocket["port"], self)))
+                    if not IsAlreadyConnected(dmsg["host"], dmsg["port"], GN.listSoc) :
+                        JoinSocket = joinConnection(msg, GN)
+                        GN.listSoc.append(JoinSocket)
+                        GN.threadId.append(CreateThread(ThreadListenNodePort, JoinSocket["name"], (JoinSocket["socket"], JoinSocket["host"], JoinSocket["port"], GN)))
                 elif typemsg == str(head[2]) :
                     print("Block")
                 elif typemsg == str(head[4]) :
@@ -52,7 +52,7 @@ def ThreadListenNode(node, host, hostport, GN) :
         co, addr = node.accept()
         GN.threadId.append(CreateThread(ThreadAccept, addr, (co, GN)))
 
-def ThreadAccept(node, self) :
+def ThreadAccept(node, GN) :
     HeaderConnection = node.recv(headersz)
     if HeaderConnection :
         Header = HeaderConnection.decode()
@@ -73,17 +73,17 @@ def ThreadAccept(node, self) :
         return
     dictSocket = dict({"host":msgdict["host"], "port":msgdict["port"], "name":msgdict["name"], "socket":node})
     sendSocket = dict({"host":msgdict["host"], "port":msgdict["port"], "name":msgdict["name"]})
-    if len(self.listSoc) > 1 :
+    if len(GN.listSoc) > 1 :
         #Send to everyone connection
-        for soc in self.listSoc :
+        for soc in GN.listSoc :
             if soc["name"] == "NodeOrigin" :
                 continue
             print("Send to : ", soc["name"])
             createPackage(1, str(sendSocket), soc["socket"])
-    self.listSoc.append(dictSocket)
-    ThreadGenesis(node, msg, self, dictSocket)
+    GN.listSoc.append(dictSocket)
+    ThreadGenesis(node, msg, GN, dictSocket)
 
-def ThreadGenesis(node, info, self, dictSock) :
+def ThreadGenesis(node, info, GN, dictSock) :
     while True:
         headerEnc = node.recv(headersz)
         if headerEnc :
@@ -93,7 +93,7 @@ def ThreadGenesis(node, info, self, dictSock) :
             newmsgEnc = node.recv(lenmsg)
         else :
             print("Message empty we close connection to ", info)
-            self.listSoc.remove(dictSock)
+            GN.listSoc.remove(dictSock)
             exit()
             continue
         if newmsgEnc :
@@ -103,11 +103,11 @@ def ThreadGenesis(node, info, self, dictSock) :
                 if typemsg == str(head[1]) :
                     print("Join connection")
                     dmsg = eval(msg)
-                    if not IsAlreadyConnected(dmsg["host"], dmsg["port"], self.listSoc) :
-                        JoinSocket = joinConnection(msg, self)
-                        self.listSoc.append(JoinSocket)
+                    if not IsAlreadyConnected(dmsg["host"], dmsg["port"], GN.listSoc) :
+                        JoinSocket = joinConnection(msg, GN)
+                        GN.listSoc.append(JoinSocket)
                         JoinClearSocket = dict({"host":JoinSocket["host"], "port":JoinSocket["port"], "name":JoinSocket["name"]})
-                        self.threadId.append(CreateThread(ThreadListenNodePort, JoinSocket["name"], (JoinSocket["socket"], JoinClearSocket, self, JoinSocket)))
+                        GN.threadId.append(CreateThread(ThreadListenNodePort, JoinSocket["name"], (JoinSocket["socket"], JoinClearSocket, GN, JoinSocket)))
                 elif typemsg == str(head[2]) :
                     print("Block")
                 elif typemsg == str(head[4]) :

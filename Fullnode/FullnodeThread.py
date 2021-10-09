@@ -25,7 +25,7 @@ def ThreadListenNode(node, FN) :
                 continue
             createPackage(4, "POG TEST", soc["socket"])
 
-def ThreadAcceptNode(node, self) :
+def ThreadAcceptNode(node, FN) :
     HeaderConnection = node.recv(headersz)
     print("RECV :", HeaderConnection)
     if HeaderConnection :
@@ -47,17 +47,17 @@ def ThreadAcceptNode(node, self) :
         return
     dictSocket = dict({"host":msgdict["host"], "port":msgdict["port"], "name":msgdict["name"], "socket":node})
     sendSocket = dict({"host":msgdict["host"], "port":msgdict["port"], "name":msgdict["name"]})
-    if len(self.listSoc) > 1 :
+    if len(FN.listSoc) > 1 :
         #Send to everyone connection
-        for soc in self.listSoc :
+        for soc in FN.listSoc :
             if soc["name"] == "NodeOrigin" :
                 continue
             print("Send to : ", soc["name"])
             createPackage(1, str(sendSocket), soc["socket"])
-    self.listSoc.append(dictSocket)
-    ThreadNode(node, msg, dictSocket, self)
+    FN.listSoc.append(dictSocket)
+    ThreadNode(node, msg, dictSocket, FN)
 
-def ThreadNode(node, me, dictSocket, self) :
+def ThreadNode(node, me, dictSocket, FN) :
     while True:
         headerEnc = node.recv(headersz)
         if headerEnc :
@@ -67,7 +67,7 @@ def ThreadNode(node, me, dictSocket, self) :
             newmsgEnc = node.recv(lenmsg)
         else :
             print("Message empty we close connection")
-            self.listSoc.remove(dictSocket)
+            FN.listSoc.remove(dictSocket)
             exit()
             continue
         if newmsgEnc :
@@ -79,12 +79,12 @@ def ThreadNode(node, me, dictSocket, self) :
                 elif typemsg == str(head[1]) :
                     print("Join connection")
                     dmsg = eval(msg)
-                    if not IsAlreadyConnected(dmsg["host"], dmsg["port"], self.listSoc) :
-                        JoinSocket = joinConnection(msg, self)
+                    if not IsAlreadyConnected(dmsg["host"], dmsg["port"], FN.listSoc) :
+                        JoinSocket = joinConnection(msg, FN)
                         JoinClearSocket = dict({"host":JoinSocket["host"], "port":JoinSocket["port"], "name":JoinSocket["name"]})
-                        self.threadId.append(CreateThread(ThreadNode, JoinSocket["name"], (JoinSocket["socket"], JoinClearSocket, JoinSocket, self)))
+                        FN.threadId.append(CreateThread(ThreadNode, JoinSocket["name"], (JoinSocket["socket"], JoinClearSocket, JoinSocket, FN)))
                         #SEND TO EVERYONE A TESTMSG
-                        for soc in self.listSoc :
+                        for soc in FN.listSoc :
                             if soc["name"] == "NodeOrigin" :
                                 continue
                             print("Send to :", soc["name"])
@@ -97,7 +97,7 @@ def ThreadNode(node, me, dictSocket, self) :
                     print("Invalid Type")
         sleep(0.5)
 
-def ThreadToGenesis(node, me, self, dictSocket) :
+def ThreadToGenesis(node, me, FN, dictSocket) :
     createPackage(0, str(me), node)
     while True:
         headerEnc = node.recv(headersz)
@@ -108,7 +108,7 @@ def ThreadToGenesis(node, me, self, dictSocket) :
             newmsgEnc = node.recv(lenmsg)
         else :
             print("Message empty we close connection (ToGenesisFunction)")
-            self.listSoc.remove(dictSocket)
+            FN.listSoc.remove(dictSocket)
             exit()
             continue
         if newmsgEnc :
@@ -118,13 +118,13 @@ def ThreadToGenesis(node, me, self, dictSocket) :
                 if typemsg == str(head[1]) :
                     print("Join connection")
                     dmsg = eval(msg)
-                    if not IsAlreadyConnected(dmsg["host"], dmsg["port"], self.listSoc) :
-                        JoinSocket = joinConnection(msg, self)
-                        self.listSoc.append(JoinSocket)
+                    if not IsAlreadyConnected(dmsg["host"], dmsg["port"], FN.listSoc) :
+                        JoinSocket = joinConnection(msg, FN)
+                        FN.listSoc.append(JoinSocket)
                         JoinClearSocket = dict({"host":JoinSocket["host"], "port":JoinSocket["port"], "name":JoinSocket["name"]})
-                        self.threadId.append(CreateThread(ThreadNode, JoinSocket["name"], (JoinSocket["socket"], JoinClearSocket, JoinSocket, self)))
+                        FN.threadId.append(CreateThread(ThreadNode, JoinSocket["name"], (JoinSocket["socket"], JoinClearSocket, JoinSocket, FN)))
                         #SEND TO EVERYONE A TESTMSG
-                        for soc in self.listSoc :
+                        for soc in FN.listSoc :
                             if soc["name"] == "NodeOrigin" :
                                 continue
                             createPackage(4, "POG TEST", soc["socket"])

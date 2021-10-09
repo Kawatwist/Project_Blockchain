@@ -40,7 +40,8 @@ class Block :
         return self.contents["contents"]["blockNumber"]
 
 class Blockchain :
-    data = {u'Pool':500000}
+    data = {u'Pool':499940.1, u'Oka':50, u"Ben":5, u"Coconut":4.9}
+    # data = [{u'Pool':499940.1}, {u'Oka':50}, {u"Ben":5}, {u"Coconut":4.9}]
     txnBuffer = []
     blockBuffer = []
     lastBlock = Block()

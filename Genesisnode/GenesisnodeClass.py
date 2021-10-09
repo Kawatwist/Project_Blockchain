@@ -45,10 +45,12 @@ class Genesisnode :
         self.threadId.append(CreateThread(ThreadListenNode, "GenesisThread", (OwnSocket["socket"], self.hostname, self.NodePort, self)))
         while True :
             print("\n")
+            print("MyWallet :", self.config.wallet.Username, ",", self.config.wallet.Credit, "$")
             for connected in self.listSoc :
                 print("=>", connected["name"])
             for threadId in self.threadId :
                 print("Thread :", str(threadId["name"]).ljust(25), "state :", threadId["ThreadId"].is_alive())
                 if not threadId["ThreadId"].is_alive() :
                     self.threadId.remove(threadId)
+            self.config.wallet.UpdateWallet(self.bc.data)
             sleep(5)

@@ -36,7 +36,8 @@ class Config :
     name = ""
     master = False
 
-    def __init__(self, args) :
+    def __init__(self, args, wallet) :
+        self.wallet = wallet
         if args.nodeType :
             self.setType(args.nodeType)
         if args.hostPort :

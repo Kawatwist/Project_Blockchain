@@ -1,4 +1,5 @@
 from Tools.ConfigClass import Config as cf
+from Tools.Wallet import Wallet
 import argparse
 
 def main():
@@ -13,7 +14,10 @@ def main():
     parser.add_argument('--master', required=False, type=bool, help='Set the flag if its the real Genesis (either the node will not be connected)')
     args = parser.parse_args()
 
-    config = cf(args)
+    MyWallet = Wallet()
+    MyWallet.connect("Oka", 50)
+
+    config = cf(args, MyWallet)
     config.createNode()
     if config.node :
         config.node.run()
