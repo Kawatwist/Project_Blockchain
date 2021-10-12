@@ -90,6 +90,9 @@ def ThreadNode(node, me, dictSocket, FN) :
                             print("Send to :", soc["name"])
                             createPackage(4, "POGZZ", soc["socket"])
                 elif typemsg == str(head[2]) :
+                    dmsg = eval(msg)
+                    FN.bc.tryAddBlock2(dmsg)
+                    print("New state : ", FN.bc.getState())
                     print("Block")
                 elif typemsg == str(head[4]) :
                     print("MSG : ", msg)
@@ -129,6 +132,9 @@ def ThreadToGenesis(node, me, FN, dictSocket) :
                                 continue
                             createPackage(4, "POG TEST", soc["socket"])
                 elif typemsg == str(head[2]) :
+                    dmsg = eval(msg)
+                    FN.bc.tryAddBlock2(dmsg)
+                    print("New state : ", FN.bc.getState())
                     print("Block")
                 elif typemsg == str(head[4]) :
                     print("MSG :", msg)

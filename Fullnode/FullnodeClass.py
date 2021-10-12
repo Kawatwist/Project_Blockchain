@@ -3,6 +3,7 @@ import socket
 
 from Tools.FormatMsg import *
 from Tools.Connection import *
+from Tools.BlockchainClass import *
 from Fullnode.FullnodeThread import *
 from threading import Thread
 from time import sleep
@@ -11,9 +12,9 @@ blockSizeLimit = 5
 
 class Fullnode :
     listUser = [] # User connected to this node
-    # listNode = [] # Node info (without socket for sending)
     listSoc = []  # Node with Socket
     threadId = [] # Dict {Thread, Name}
+    bc = Blockchain()
 
     def __init__(self, config) :
         self.config = config
@@ -51,4 +52,5 @@ class Fullnode :
                 print("Thread :", str(threadId["name"]).ljust(25), "state :", threadId["ThreadId"].is_alive())
                 if not threadId["ThreadId"].is_alive() :
                     self.threadId.remove(threadId)
+            print("State :", self.bc.getState())
             sleep(5)

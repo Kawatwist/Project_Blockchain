@@ -1,4 +1,6 @@
 import Tools.Hash as Hash
+import Tools.Transaction as Trade
+
 
 blockSizeLimit = 5
 
@@ -58,7 +60,7 @@ class Blockchain :
         genesisBlock = Block()
         genesisBlock.setinfo(info)
         lastBlock = genesisBlock
-        self.lastHash = None
+        self.lastHash = 0x0
         self.chain = []
         self.chain.append(genesisBlock)
 
@@ -89,12 +91,26 @@ class Blockchain :
     def setState(self, state) :
         self.data = state
 
+    def tryAddBlock2(self, blockget) :
+        newBlock = Block()
+        # saveBlock.setinfo(saveinfo)
+        # if blockget["prev"] == self.lastHash:
+        print("Some new txns : ", blockget["contents"]["contents"]["txnCount"])
+        newBlock.setinfo(blockget)
+        for txn in blockget["contents"]["contents"]["txns"] :
+            currState = self.getState()
+            validate = Trade.isValidTxn(txn, currState)
+            if validate == True :
+                self.setState(Trade.updateState(txn, currState))
+        self.chain.append(newBlock)
+        return True
+
     def tryAddBlock(self, block) :
         self.makeBlock(block["contents"]["txns"])
         return True
 
     def makeBlock(self, txnList) :
-        if len(self.chain) is 0 :
+        if len(self.chain) == 0 :
             print("Chain Empty ?!", self.chain)
             return
         saveinfo = {}

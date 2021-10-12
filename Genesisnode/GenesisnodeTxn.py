@@ -52,7 +52,7 @@ def ThreadMempoll(GN) :
                 if node["name"] == "NodeOrigin" :
                     continue
                 if newBlock.getinfo()["contents"]["contents"]["blockNumber"] :
-                    createPackage(2, str(newBlock.getinfo()["contents"]), node["socket"])
+                    createPackage(2, str(newBlock.getinfo()), node["socket"])
                     # nextblock = "--newBlock" + str(newBlock.getinfo()["contents"])
                     # print("Send :", newBlock.getinfo()["contents"])
                     # node["sock"].send(nextblock.encode())
